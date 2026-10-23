@@ -1,0 +1,66 @@
+{
+  "name": "controle-rc",
+  "productName": "Controle de RCs",
+  "version": "1.1.1",
+  "description": "Controle de Requisições de Compra, entregas, transferências e devoluções (offline, dados em JSON locais).",
+  "author": "Controle de RCs",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "audit": "npm audit --audit-level=low",
+    "sbom": "npm sbom --sbom-format cyclonedx > sbom.cdx.json",
+    "dist": "electron-builder --win --x64",
+    "hash": "powershell -NoProfile -Command \"Get-ChildItem dist\\*.exe | Get-FileHash -Algorithm SHA256 | Format-List\""
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "br.local.controle-rc",
+    "productName": "Controle de RCs",
+    "copyright": "Copyright (c) Controle de RCs",
+    "asar": true,
+    "publish": null,
+    "electronLanguages": [
+      "pt-BR",
+      "en-US"
+    ],
+    "files": [
+      "main.js",
+      "preload.js",
+      "storage.js",
+      "logger.js",
+      "seed.json",
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "shortcutName": "Controle de RCs",
+      "artifactName": "ControleRC-Instalador-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "ControleRC-Portatil-${version}.${ext}"
+    }
+  }
+}
