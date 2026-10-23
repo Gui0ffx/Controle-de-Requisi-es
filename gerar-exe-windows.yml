@@ -1,0 +1,48 @@
+# Gera o .exe na nuvem (GitHub Actions) quando não há um PC Windows com internet.
+# ATENÇÃO: use um repositório PRIVADO – o projeto contém seed.json (dados reais das RCs).
+# Respeite a política da sua empresa antes de enviar dados a terceiros.
+name: Gerar executável Windows
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar dependências
+        run: npm install
+      - name: Testes
+        run: npm test
+      - name: Auditoria de dependências (npm audit)
+        run: npm audit --audit-level=low | tee auditoria-npm.txt
+        continue-on-error: true
+      - name: SBOM (CycloneDX)
+        run: npm sbom --sbom-format cyclonedx --sbom-type application > sbom.cdx.json
+        continue-on-error: true
+      - name: Análise estática (Semgrep)
+        run: |
+          pip install semgrep
+          semgrep scan --config p/javascript --config p/owasp-top-ten --exclude node_modules . | tee auditoria-semgrep.txt
+        continue-on-error: true
+      - name: Compilar
+        run: npm run dist
+      - name: Hash SHA-256
+        run: |
+          cd dist
+          sha256sum *.exe | tee SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ControleRC-windows
+          path: |
+            dist/*.exe
+            dist/SHA256.txt
+            package-lock.json
+            sbom.cdx.json
+            auditoria-npm.txt
+            auditoria-semgrep.txt
